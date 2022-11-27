@@ -1,6 +1,5 @@
 import scrapy
-from bs4 import BeautifulSoup
-from .Mofad.louvre_data import LouvreData
+import pandas as pd
 class LouvreSpider(scrapy.Spider):
     name = "louvre"
     
@@ -8,12 +7,24 @@ class LouvreSpider(scrapy.Spider):
             'https://www.louvre.fr/en/what-s-on/exhibitions'
         ]
     def parse(self, response):
-        url = []
-        soup = BeautifulSoup(response.text)
-        link = soup.find_all('div', { "class", "Card_child"})
-        for href in link:
-            if href.find('h2',{ "class", "Card_Main_title"}):
-                url.append('https://www.louvre.fr{}'.format(href.find('a',{ "class", "Card_Main_link extended-click"}).get('href')))
-            elif href.find('h2',{ "class", "Card_Secondary_title louvre-24"}):
-                url.append('https://www.louvre.fr{}'.format(href.find('a',{ "class", "Card_Secondary_link extended-click"}).get('href')))
-        LouvreData.start_request(self, url)
+        data = {}
+        data['LINK'] = []
+        data['NAME OF EVENT'] =[]
+        data['DATE']=[]
+        url_card = response.css('.extended-click')
+        url = url_card.xpath('@href').extract()
+        for href in url:
+            data['LINK'].append('https://www.louvre.fr{}'.format(href))
+        if response.css('a.Card_Main_link.extended-click::text').extract_first() is not None:
+            if len(response.css('p.Card_Main_subtitle::text').extract()) > 0:
+                data['NAME OF EVENT']+=response.css('a.Card_Main_link.extended-click::text').extract_first_()+' '+response.css('a.Card_Main_date::text').extract_first()
+            data['NAME OF EVENT']+=response.css('a.Card_Main_link.extended-click::text').extract()
+            data['DATE']+=response.css('p.Card_Main_date::text').extract()
+        if response.css('a.Card_Secondary_link.extended-click::text').extract_first() is not None:
+            if len(response.css('p.Card_Secondary_subtitle::text').extract())>0: 
+                data['NAME OF EVENT']+=[response.css('a.Card_Secondary_link.extended-click::text').extract_first()+' '+response.css('p.Card_Secondary_subtitle::text').extract_first()]
+            data['NAME OF EVENT']+=response.css('a.Card_Secondary_link.extended-click::text')[1:].extract()
+            data['DATE']+=response.css('p.Card_Secondary_date::text').extract()
+        df = pd.DataFrame(data) 
+        df.to_csv('louvre_data.csv', index=False, encoding='utf-8')
+        

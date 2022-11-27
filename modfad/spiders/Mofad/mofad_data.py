@@ -16,7 +16,7 @@ class MofadData():
                 date.append(soup.find("time",{"class":"event-date"}).text if soup.find("time",{"class":"event-date"}).text is not None else 0)
             except:
                 if res.status_code == 429:
-                    time.sleep(300)
+                    time.sleep(100)
                     res = requests.get(url=url)
                     soup =  BeautifulSoup(str(res.text))
                     name.append(soup.find("h1",{"class":"eventitem-title"}).text if soup.find("h1",{"class":"eventitem-title"}).text is not None else 0)

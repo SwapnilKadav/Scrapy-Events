@@ -66,7 +66,16 @@ ROBOTSTXT_OBEY = True
 #ITEM_PIPELINES = {
 #    'modfad.pipelines.ModfadPipeline': 300,
 #}
-
+PROXY_POOL_BAN_POLICY = 'modfad.policy.BanDetectionPolicyNotText'
+PROXY_POOL_ENABLED = True
+DOWNLOADER_MIDDLEWARES = {
+    # ...
+    'scrapy_proxy_pool.middlewares.ProxyPoolMiddleware': 610,
+    'scrapy_proxy_pool.middlewares.BanDetectionMiddleware': 620,
+    'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
+    'scrapy_user_agents.middlewares.RandomUserAgentMiddleware': 400,
+    # ...
+}
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
 #AUTOTHROTTLE_ENABLED = True
