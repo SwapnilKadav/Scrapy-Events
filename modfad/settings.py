@@ -66,8 +66,14 @@ ROBOTSTXT_OBEY = True
 #ITEM_PIPELINES = {
 #    'modfad.pipelines.ModfadPipeline': 300,
 #}
+ITEM_PIPELINES = {
+   'modfad.pipelines.ModfadPipeline': 300, 
+}
+COOKIES_ENABLED = True
+
 PROXY_POOL_BAN_POLICY = 'modfad.policy.BanDetectionPolicyNotText'
 PROXY_POOL_ENABLED = True
+
 DOWNLOADER_MIDDLEWARES = {
     # ...
     'scrapy_proxy_pool.middlewares.ProxyPoolMiddleware': 610,

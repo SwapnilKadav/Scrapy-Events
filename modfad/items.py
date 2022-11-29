@@ -8,5 +8,7 @@ import scrapy
 
 class ModfadItem(scrapy.Item):
     # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+    LINK = scrapy.Field()
+    NAME_OF_EVENT = scrapy.Field()
+    DATE = scrapy.Field()
+    
