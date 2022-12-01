@@ -1,6 +1,5 @@
 import scrapy
 import pandas as pd
-from modfad.items import ModfadItem
 class LouvreSpider(scrapy.Spider):
     name = "louvre"
     
@@ -8,7 +7,7 @@ class LouvreSpider(scrapy.Spider):
             'https://www.louvre.fr/en/what-s-on/exhibitions'
         ]
     def parse(self, response):
-        data = ModfadItem()
+        data ={}
         data['LINK'] = []
         data['NAME_OF_EVENT'] =[]
         data['DATE']=[]
@@ -26,7 +25,7 @@ class LouvreSpider(scrapy.Spider):
                 data['NAME_OF_EVENT']+=[response.css('a.Card_Secondary_link.extended-click::text').extract_first()+' '+response.css('p.Card_Secondary_subtitle::text').extract_first()]
             data['NAME_OF_EVENT']+=response.css('a.Card_Secondary_link.extended-click::text')[1:].extract()
             data['DATE']+=response.css('p.Card_Secondary_date::text').extract()
-        df = pd.DataFrame(data) 
+        df = pd.DataFrame(dict(data)) 
         df.to_csv('louvre_data.csv', index=False, encoding='utf-8')
         yield data
         

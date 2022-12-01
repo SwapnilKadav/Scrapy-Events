@@ -1,41 +1,23 @@
-from bs4 import BeautifulSoup
-import pandas as pd
+import scrapy
 import time
-import requests
 from scrapy.spiders import SitemapSpider
-from modfad.items import ModfadItem
 class MofadSpider(SitemapSpider):
     name = "mofad"
-    allowed_domains = ['https://www.mofad.org']
-    sitemap_urls = ['https://www.mofad.org/sitemap.xml']
+    sitemap_urls = ['https://www.mofad.org/sitemap.xml', ]
     
-    def sitemap_filter(self, entries):
-        c=0
-        data = ModfadItem()
-        data['LINK'] = []
-        data['NAME_OF_EVENT'] = []
-        data['DATE']= []
-        for entry in entries:
-            if 'https://www.mofad.org/calendar/' in str(entry['loc']):
-                res = requests.get(entry['loc'])
-                data['LINK'].append(entry['loc'])
-                try:
-                    soup =  BeautifulSoup(str(res.text))
-                    data['NAME_OF_EVENT'].append(soup.find("h1",{"class":"eventitem-title"}).text if soup.find("h1",{"class":"eventitem-title"}).text is not None else 0)
-                    data['DATE'].append(soup.find("time",{"class":"event-date"}).text if soup.find("time",{"class":"event-date"}).text is not None else 0)
-                except:
-                    if res.status_code == 429:
-                        time.sleep(100)
-                        res = requests.get(url=entry['loc'])
-                        soup =  BeautifulSoup(str(res.text))
-                        data['NAME_OF_EVENT'].append(soup.find("h1",{"class":"eventitem-title"}).text if soup.find("h1",{"class":"eventitem-title"}).text is not None else 0)
-                        data['DATE'].append(soup.find("time",{"class":"event-date"}).text if soup.find("time",{"class":"event-date"}).text is not None else 0)
-                    else:
-                        pass
-            try:
-                df = pd.DataFrame(data) 
-                df.to_csv('mofad_data.csv', index=False, encoding='utf-8')
-            except:
-                pass
-        yield data
-          
+    def parse(self, response):
+        try:
+            if response.status == 429:
+                time.sleep(60)
+                yield scrapy.Request(response, callback=self.parse)
+        except:
+            pass
+        if 'https://www.mofad.org/calendar/' ==  str(response.url):
+            pass
+        elif 'https://www.mofad.org/calendar/' in str(response.url):
+            link = response.url
+            name = response.css('h1.eventitem-title::text').extract_first()
+            date = response.css('time.event-date::text').extract_first()
+            if link and name and date :
+                
+                yield {'LINK':[link], 'NAME_OF_EVENT':[name], 'DATE':[date]}
